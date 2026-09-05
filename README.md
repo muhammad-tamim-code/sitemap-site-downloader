@@ -72,5 +72,6 @@ py -3 -m unittest discover -s tests -v
 - It does not run JavaScript.
 - It makes a static copy. Forms, login, search, cart and other server features will not work offline.
 - Some complex websites may still need the live server.
+- A website can block automated downloads. The tool will show a clear message when the sitemap is blocked.
 
 Only download a website when you own it or have permission.

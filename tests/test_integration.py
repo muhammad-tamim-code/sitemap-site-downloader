@@ -16,6 +16,7 @@ class SiteHandler(BaseHTTPRequestHandler):
         origin = f"http://127.0.0.1:{self.server.server_port}"
         routes = {
             "/sitemap.xml": ("application/xml", f"<urlset><url><loc>{origin}/</loc></url><url><loc>{origin}/about/</loc></url></urlset>".encode()),
+            "/blocked.xml": ("text/html", b"<!doctype html><html><head><title>One moment, please...</title></head><body>Please wait</body></html>"),
             "/": ("text/html", b"<html><head><title>Home</title><link rel='stylesheet' href='/assets/site.css'></head><body><h1>Home</h1><a href='/about/'>About</a><img src='/assets/logo.png'></body></html>"),
             "/about/": ("text/html", b"<html><head><title>About</title><meta name='description' content='About this test'></head><body><h1>About us</h1><a href='/'>Home</a></body></html>"),
             "/assets/site.css": ("text/css", b"body{background-image:url('/assets/bg.png')}") ,
@@ -35,6 +36,22 @@ class SiteHandler(BaseHTTPRequestHandler):
 
 
 class DownloaderIntegrationTests(unittest.TestCase):
+    def test_html_block_page_gets_a_clear_error(self):
+        server = ThreadingHTTPServer(("127.0.0.1", 0), SiteHandler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            with tempfile.TemporaryDirectory() as temp:
+                with self.assertRaisesRegex(RuntimeError, "returned an HTML page"):
+                    SiteDownloader(
+                        f"http://127.0.0.1:{server.server_port}/blocked.xml",
+                        Path(temp) / "archive",
+                        delay=0,
+                    ).run()
+        finally:
+            server.shutdown()
+            server.server_close()
+
     def test_downloads_pages_assets_and_csv_inventory(self):
         server = ThreadingHTTPServer(("127.0.0.1", 0), SiteHandler)
         thread = threading.Thread(target=server.serve_forever, daemon=True)

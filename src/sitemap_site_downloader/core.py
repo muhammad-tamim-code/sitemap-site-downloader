@@ -206,7 +206,21 @@ def collect_sitemap_urls(sitemap_url: str, timeout: float, limit: int, delay: fl
         result = fetch(current, timeout)
         if not result.body or result.status >= 400 or result.status == 0:
             raise RuntimeError(f"Could not read sitemap {current}: HTTP {result.status} {result.error}".strip())
-        root_name, locations = sitemap_locations(decode_text(result.body, result.content_type))
+        sitemap_text = decode_text(result.body, result.content_type)
+        try:
+            root_name, locations = sitemap_locations(sitemap_text)
+        except ET.ParseError as exc:
+            title_match = re.search(r"<title[^>]*>(.*?)</title>", sitemap_text, flags=re.I | re.S)
+            if re.search(r"<!doctype\s+html|<html", sitemap_text, flags=re.I):
+                title = " ".join(title_match.group(1).split()) if title_match else "untitled page"
+                raise RuntimeError(
+                    f"The sitemap URL returned an HTML page titled '{title}' instead of XML. "
+                    "The website may be blocking automated requests. Try opening the sitemap in your browser, "
+                    "or ask the website owner to allow this downloader."
+                ) from exc
+            raise RuntimeError(f"The sitemap is not valid XML: {exc}") from exc
+        if root_name not in {"sitemapindex", "urlset"}:
+            raise RuntimeError(f"The XML root is '{root_name}', not a sitemapindex or urlset.")
         if root_name == "sitemapindex":
             pending.extend(urljoin(current, location) for location in locations if urljoin(current, location) not in seen_sitemaps)
         else:

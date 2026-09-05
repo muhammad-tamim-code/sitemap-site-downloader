@@ -20,6 +20,10 @@ def pause_before_close(interactive: bool) -> None:
 
 def valid_url(value: str) -> str:
     value = value.strip()
+    markdown_link = re.fullmatch(r"\[[^\]]+\]\((https?://[^)]+)\)", value, flags=re.I)
+    if markdown_link:
+        value = markdown_link.group(1)
+    value = value.strip("<>")
     if not value:
         raise argparse.ArgumentTypeError("A sitemap URL is required.")
     if not urlparse(value).scheme:

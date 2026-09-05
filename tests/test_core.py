@@ -5,9 +5,14 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from sitemap_site_downloader.core import PageParser, css_references, local_path_for_url, sitemap_locations
+from sitemap_site_downloader.cli import valid_url
 
 
 class CoreTests(unittest.TestCase):
+    def test_markdown_link_input_is_cleaned(self):
+        copied = "[https://x.test/sitemap.xml](https://x.test/sitemap.xml)"
+        self.assertEqual(valid_url(copied), "https://x.test/sitemap.xml")
+
     def test_sitemap_index(self):
         kind, urls = sitemap_locations("<sitemapindex><sitemap><loc>https://x.test/a.xml</loc></sitemap></sitemapindex>")
         self.assertEqual(kind, "sitemapindex")
