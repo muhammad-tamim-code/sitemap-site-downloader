@@ -1,40 +1,46 @@
 # Sitemap Site Downloader
 
-Download every page listed in an XML sitemap, save a local website copy, and export page and file inventories as CSV. Sitemap indexes and gzip-compressed sitemaps are supported.
+This tool downloads pages from a website sitemap.
 
-## What the tool produces
+Paste a sitemap URL. The tool will save the pages and website files on your computer. It will also make CSV files with page details.
 
-- `site/`: downloaded HTML and same-site assets
-- `pages.csv`: one row per sitemap page, including status, title, description, canonical, robots, H1, word count, links, assets and errors
-- `files.csv`: remote URL to local-file mapping
-- `summary.txt`: totals and output location
+## What you get
 
-The result is a static archive. Forms, logins, APIs, search, carts and other server-side behaviour do not become functional offline. JavaScript-rendered content may be absent because version 0.1 downloads HTTP responses rather than running a browser.
+- `site/` has the saved website pages and files.
+- `pages.csv` has the page URL, status code, title, description, canonical URL, robots tag, H1, word count, link count, file count and errors.
+- `files.csv` shows each online URL and its saved file path.
+- `summary.txt` shows the final totals.
 
-## Run from Python
+## Run with Python
+
+You need Python 3.11 or newer.
 
 ```powershell
 py -3 run.py
 ```
 
-Paste the sitemap URL when prompted. You can also run it without prompts:
+The tool will ask for the sitemap URL.
+
+You can also give the URL in the command:
 
 ```powershell
-py -3 run.py https://example.com/sitemap_index.xml --output output/example
+py -3 run.py https://example.com/sitemap.xml
 ```
 
-When launched without arguments (including by double-clicking the Windows executable), the output folder opens automatically and the terminal remains open until you press Enter.
+Choose your own output folder:
 
-Useful options:
+```powershell
+py -3 run.py https://example.com/sitemap.xml --output output/example
+```
+
+## Useful options
 
 ```text
---pages-only       Skip images, stylesheets, scripts and other assets
---limit 500        Stop after 500 page URLs
---delay 0.5        Wait half a second between requests
---timeout 45       Allow 45 seconds per request
+--pages-only       Save pages but skip images, CSS and other files
+--limit 500        Download up to 500 pages
+--delay 0.5        Wait 0.5 seconds between requests
+--timeout 45       Wait up to 45 seconds for each request
 ```
-
-Run only on websites you own or are authorized to archive. Review the site's terms and use a sensible delay.
 
 ## Install as a terminal command
 
@@ -45,25 +51,26 @@ pip install -e .
 sitemap-site-downloader https://example.com/sitemap.xml
 ```
 
-## Build a Windows executable
+## Make a Windows EXE
 
 ```powershell
 .\build_exe.ps1
 ```
 
-The executable will be created in `dist/`. Building locally keeps the published Git repository small and allows users to verify the source.
+The EXE will be inside the `dist` folder. You can also run the `build-windows` workflow on GitHub and download the EXE from the workflow result.
 
-After publishing to GitHub, the `build-windows` Actions workflow can also build a downloadable Windows executable artifact on demand.
-
-## Test
+## Test the code
 
 ```powershell
 py -3 -m unittest discover -s tests -v
 ```
 
-## Current limitations
+## Limits
 
-- The sitemap defines page coverage. Unlisted pages are not discovered automatically.
-- Assets are limited to the same hostname and references found in HTML or CSS.
-- Version 0.1 does not execute JavaScript.
-- URL rewriting is designed for ordinary static assets and links; complex JavaScript applications may still depend on the live server.
+- It downloads pages found in the sitemap.
+- It downloads files from the same website.
+- It does not run JavaScript.
+- It makes a static copy. Forms, login, search, cart and other server features will not work offline.
+- Some complex websites may still need the live server.
+
+Only download a website when you own it or have permission.
